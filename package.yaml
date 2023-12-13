@@ -21,6 +21,9 @@ description:         Please see the README on GitHub at <https://github.com/Alex
 
 dependencies:
 - base >= 4.7 && < 5
+- parallel
+- containers
+- statistics
 
 ghc-options:
 - -Wall
@@ -45,7 +48,7 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - project
+    - NaiveBayes
 
 tests:
   project-test:
@@ -56,4 +59,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - project
+    - NaiveBayes
