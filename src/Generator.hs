@@ -29,7 +29,7 @@ zipFeaturesToDataset_v5 = zipWith6 (\l f1 f2 f3 f4 f5 -> (l, [f1, f2, f3, f4, f5
 
 -- [Public] [Encapsulator] Convert a list of labels and a list of feature arrays into a Dataset
 plainDataset :: [Int] -> [[Double]] -> Dataset
-plainDataset labels features = zipFeaturesToDataset_v5 labels (features !! 0) (features !! 1) (features !! 2) (features !! 3) (features !! 4)
+plainDataset labels features = zipFeaturesToDataset_v5 labels (head features) (features !! 1) (features !! 2) (features !! 3) (features !! 4)
 
 -- -- Function Group to zip multiple feature arrays into the Dataset format
 
@@ -48,7 +48,7 @@ generateIntegerLabels size maxValue = take size $ randomRs (1, maxValue) gen
 generateDataset :: Int -> Int -> [(Double, Double)] -> Dataset
 generateDataset totalSize maxValue featureParams =
   let labels = generateIntegerLabels totalSize maxValue
-      features = map (\(mean, stdDev) -> generateNormalFeature totalSize mean stdDev) featureParams
+      features = map (uncurry (generateNormalFeature totalSize)) featureParams
   in plainDataset labels features
 
 -- Function to parse a row
