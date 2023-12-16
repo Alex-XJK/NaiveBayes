@@ -2,13 +2,13 @@ module Main (
   main
 ) where
 
-import Generator(generateSampleDataset, zipFeaturesToDataset, generateDataset)
+import Generator(sampleDataset, plainDataset, generateDataset, readDataset)
 
 main :: IO ()
 main = do
-  let sampleDataset = generateSampleDataset
+  let sDataset = sampleDataset
   putStrLn "Sample Dataset:"
-  print sampleDataset
+  print sDataset
 
   let labels = [0, 1, 0, 2] :: [Int]
       features1 = [1.0, 2.0, 3.0, 4.0] :: [Double]
@@ -16,7 +16,7 @@ main = do
       features3 = [3.0, 4.0, 2.5, 3.5] :: [Double]
       features4 = [4.0, 5.0, 3.5, 4.5] :: [Double]
       features5 = [5.0, 6.0, 4.5, 5.5] :: [Double]
-      pDataset = zipFeaturesToDataset labels [features1, features2, features3, features4, features5]
+      pDataset = plainDataset labels [features1, features2, features3, features4, features5]
   putStrLn "Zip 5 features to dataset:"
   print pDataset
 
@@ -26,3 +26,8 @@ main = do
       gDataset = generateDataset totalSize maxValue featureParams
   putStrLn "Generated Dataset:"
   print gDataset
+
+  let filePath = "./data/test.tsv"
+  rDataset <- readDataset filePath
+  putStrLn "Read Dataset:"
+  print rDataset
