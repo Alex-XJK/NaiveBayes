@@ -2,6 +2,7 @@ module Generator (
     sampleDataset,
     plainDataset,
     generateDataset,
+    generateDatasetParallel,
     readDataset
 ) where
 
@@ -11,6 +12,8 @@ import Data.Random.Normal (normals')
 import System.IO ()
 
 import Types
+
+import Control.Parallel.Strategies
 
 -- [Public] Retrieve a fixed sample dataset
 sampleDataset :: Dataset
@@ -49,6 +52,14 @@ generateDataset :: Int -> Int -> [(Double, Double)] -> Dataset
 generateDataset totalSize maxValue featureParams =
   let labels = generateIntegerLabels totalSize maxValue
       features = map (uncurry (generateNormalFeature totalSize)) featureParams
+  in plainDataset labels features
+
+-- [Parallel] Parallel version of generateDataset
+-- [Public] Generate a complete dataset with given parameters
+generateDatasetParallel :: Int -> Int -> [(Double, Double)] -> Dataset
+generateDatasetParallel totalSize maxValue featureParams =
+  let labels = runEval $ parList rpar $ generateIntegerLabels totalSize maxValue
+      features = parMap rpar (uncurry (generateNormalFeature totalSize)) featureParams
   in plainDataset labels features
 
 -- Function to parse a row
