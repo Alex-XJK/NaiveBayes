@@ -1,14 +1,15 @@
-module Main (main) where
+module Main (
+  main
+) where
 
-import Lib
+import Generator (generateSampleDataset, generateRandomDataset)
 
 main :: IO ()
 main = do
-  let dataset = [(0.0, [1.0, 2.0, 3.0]), (1.0, [2.0, 3.0, 4.0]), (0.0, [1.0, 1.5, 2.5]), (1.0, [2.0, 2.5, 3.5])]
-      k = 4     -- Number of folds for cross-validation
-  putStrLn $ "Cross-validation accuracy: " ++ show (crossValidation k dataset)
+  let sampleDataset = generateSampleDataset
+  putStrLn "Sample Dataset:"
+  print sampleDataset
 
-    -- labels = [0, 1, 0, 1]
-    -- feature1 = [1.0, 2.0, 1.0, 2.0]
-    -- feature2 = [2.0, 3.0, 1.5, 2.5]
-    -- feature3 = [3.0, 4.0, 2.5, 3.5]
+  let randomDataset = generateRandomDataset 100 2 5  -- Example: Dataset size = 100, Label count = 2, Feature count = 5
+  putStrLn "\nRandomly Generated Dataset:"
+  print randomDataset

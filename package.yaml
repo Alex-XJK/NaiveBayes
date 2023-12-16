@@ -24,6 +24,8 @@ dependencies:
 - parallel
 - containers
 - statistics
+- split
+- random
 
 ghc-options:
 - -Wall
