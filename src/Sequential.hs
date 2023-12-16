@@ -10,11 +10,10 @@ import Utils (calculateMeanAndStdDev, extractFeature, mergeFolds, splitIntoFolds
 
 -- Function to compare features
 compareFeature :: Dataset -> Int -> Double
-compareFeature dataset k = undefined
--- compareFeature dataset k =
---   let indices = [0 .. length (snd (head dataset)) - 1]
---       accuracies = map (\idx -> splitTest (extractFeature dataset idx) k) indices
---   in maximum accuracies
+compareFeature dataset k =
+  let indices = [0 .. length (snd (head dataset)) - 1]
+      accuracies = map (\idx -> splitTest (extractFeature dataset idx) k) indices
+  in maximum accuracies
 
 -- Function to split test
 splitTest :: Dataset -> Int -> Double
