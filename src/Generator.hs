@@ -1,11 +1,14 @@
 module Generator (
     generateSampleDataset,
     generateRandomDataset,
-    zipFeaturesToDataset
+    zipFeaturesToDataset,
+    generateNormalFeature,
+    generateIntegerLabels
 ) where
 
 import Data.List (zipWith6)
-import System.Random (randomRs, newStdGen, mkStdGen, random, StdGen)
+import System.Random (randomRs, mkStdGen, random, StdGen)
+import Data.Random.Normal (normals')
 
 import Types
 
@@ -20,6 +23,17 @@ zipFeaturesToDataset_v5 = zipWith6 (\l f1 f2 f3 f4 f5 -> (l, [f1, f2, f3, f4, f5
 
 zipFeaturesToDataset :: [Int] -> [Double] -> [Double] -> [Double] -> [Double] -> [Double] -> Dataset
 zipFeaturesToDataset = zipFeaturesToDataset_v5
+
+-- Function to generate a 1-dimensional feature array with normal distribution
+generateNormalFeature :: Int -> Double -> Double -> [Double]
+generateNormalFeature size mean stdDev = take size $ normals' (mean, stdDev) gen
+  where gen = mkStdGen 42
+
+-- Function to generate an integer labels array with standard distribution
+-- The labels are in the range [1, maxValue]
+generateIntegerLabels :: Int -> Int -> [Int]
+generateIntegerLabels size maxValue = take size $ randomRs (1, maxValue) gen
+  where gen = mkStdGen 42
 
 -- Function to generate a random dataset
 generateRandomDataset :: Int -> Int -> Int -> Dataset
