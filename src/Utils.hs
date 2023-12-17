@@ -26,7 +26,7 @@ calculateMeanAndStdDev :: [Double] -> (Double, Double)
 calculateMeanAndStdDev xs =
   let n = fromIntegral $ length xs
       mean = sum xs / n
-      variance = sum (map (\x -> (x - mean) ^ 2) xs)
+      variance = sum (map (\x -> (x - mean) ^ 2) xs) / n
    in (mean, variance)
 
 -- Function to calculate the statistics for a given label
