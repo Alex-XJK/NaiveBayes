@@ -3,11 +3,13 @@ module Sequential
   )
 where
 
-import Data.List (maximumBy)
-import Data.Ord (comparing)
-import Data.Set qualified as Set
-import Types (Dataset, Model)
-import Utils (calculateLikelihood, calculateMeanAndStdDev, calculateProduct, calculateStats, extractFeature, mergeFolds, splitIntoFolds)
+import           Data.List (maximumBy)
+import           Data.Ord  (comparing)
+import qualified Data.Set  as Set
+import           Types     (Dataset, Model)
+import           Utils     (calculateLikelihood, calculateMeanAndStdDev,
+                            calculateProduct, calculateStats, extractFeature,
+                            mergeFolds, splitIntoFolds)
 
 -- Function to compare features
 compareFeature :: Dataset -> Int -> Double

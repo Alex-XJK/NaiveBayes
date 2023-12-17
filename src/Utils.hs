@@ -9,8 +9,8 @@ module Utils
   )
 where
 
-import Data.List.Split (chunksOf)
-import Types
+import           Data.List.Split (chunksOf)
+import           Types
 
 -- -- Function to calculate the mean and standard deviation of a list of values
 -- calculateMeanAndStdDev :: [Double] -> (Double, Double)
