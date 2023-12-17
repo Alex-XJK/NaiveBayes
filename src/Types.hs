@@ -1,10 +1,12 @@
-module Types (
-    Label,
+module Types
+  ( Label,
     Features,
     LabeledFeatures,
     Dataset,
-    Model
-) where
+    Model,
+    LabelStats,
+  )
+where
 
 -- Type aliases for the dataset
 type Label = Int
@@ -15,4 +17,6 @@ type LabeledFeatures = (Label, Features) -- e.g., "(0, [1.0, 2.0, 3.0])"
 
 type Dataset = [LabeledFeatures]
 
-type Model = [(Double, Double)] -- [(mean, variance)]
+type LabelStats = (Label, Double, Double, Double) -- (Label, mean, variance, prior)
+
+type Model = [LabelStats]
