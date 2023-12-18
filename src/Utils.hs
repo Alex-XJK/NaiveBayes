@@ -14,15 +14,13 @@ where
 
 import Data.List.Split (chunksOf)
 import Types
-
--- -- Function to calculate the mean and standard deviation of a list of values
--- calculateMeanAndStdDev :: [Double] -> (Double, Double)
--- calculateMeanAndStdDev xs =
---   let n = fromIntegral $ length xs
---       mean = sum xs / n
---       variance = sum (map (\x -> (x - mean) ^ 2) xs) / n
---       stdDev = sqrt variance
---   in (mean, stdDev)
+  ( Dataset,
+    ErrorRate,
+    Features,
+    Label,
+    LabelStats,
+    LabeledFeatures,
+  )
 
 -- Function to calculate the mean and standard deviation of a list of values
 calculateMeanAndStdDev :: [Double] -> (Double, Double)
