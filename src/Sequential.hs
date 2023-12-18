@@ -1,39 +1,43 @@
 module Sequential
-  ( compareFeature,
+  ( trainModel,
+    predictSingleVector,
+    predict,
+    calculateErrorRate,
+    trainAndValidate,
+    splitData,
+    kFoldCrossValidation,
+    evaluateFeature,
+    findBestFeature,
+    trainBestFeature,
   )
 where
 
 import Data.Function (on)
-import Data.List (maximumBy)
+import Data.List (maximumBy, minimumBy)
 import Data.Ord (comparing)
 import Data.Set qualified as Set
 import GHC.OldList (genericSplitAt)
-import Types (Dataset, ErrorRate, Features, Label, LabelStats, LabeledFeatures, Model)
-import Utils (averageErrorRates, calculateLikelihood, calculateMeanAndStdDev, calculateProduct, calculateStats, extractFeature, extractFeatures, extractLabels, mergeFolds, splitIntoFolds)
+import Types (Dataset, ErrorRate, Features, Label, LabeledFeatures, Model)
+import Utils (averageErrorRates, calculateProduct, calculateStats, extractFeature, extractFeatures, extractLabels)
 
--- Function to compare features
-compareFeature :: Dataset -> Int -> Double
-compareFeature dataset k =
-  let indices = [0 .. length (snd (head dataset)) - 1]
-      accuracies = map (\idx -> splitTest (extractFeature dataset idx) k) indices
-   in maximum accuracies
+-- -- Function to compare features
+-- compareFeature :: Dataset -> Int -> Double
+-- compareFeature dataset k =
+--   let indices = [0 .. length (snd (head dataset)) - 1]
+--       accuracies = map (\idx -> splitTest (extractFeature dataset idx) k) indices
+--    in maximum accuracies
 
--- Function to split test
-splitTest :: Dataset -> Int -> Double
-splitTest dataset k = undefined
+-- -- Function to split test
+-- splitTest :: Dataset -> Int -> Double
+-- splitTest dataset k = undefined
 
--- splitTest dataset k =
---   let folds = splitIntoFolds dataset k
---       accuracies = map (\i -> trainAndEvaluate (mergeFolds (take i folds) (drop (i + 1) folds))) [0..k-1]
---   in maximumBy (comparing fst) accuracies
+-- -- Function to train and evaluate the model
+-- trainAndEvaluate :: Dataset -> (Double, Model)
+-- trainAndEvaluate dataset = undefined
 
--- Function to train and evaluate the model
-trainAndEvaluate :: Dataset -> (Double, Model)
-trainAndEvaluate dataset = undefined
-
--- Function for making predictions
-prediction :: Model -> Dataset -> Double
-prediction model dataset = undefined
+-- -- Function for making predictions
+-- prediction :: Model -> Dataset -> Double
+-- prediction model dataset = undefined
 
 -- Train a model
 trainModel :: Dataset -> Model
@@ -94,3 +98,23 @@ kFoldCrossValidation k dataset =
         [ trainAndValidate training validation | i <- [0 .. k - 1], let (training, validation) = splitData i k dataset
         ]
    in averageErrorRates errorRates
+
+-- Perform k-fold cross-validation for a single feature
+evaluateFeature :: Int -> Int -> Dataset -> ErrorRate
+evaluateFeature k featureIndex dataset =
+  let featureOnly = extractFeature dataset featureIndex
+   in kFoldCrossValidation k featureOnly
+
+-- Find the feature with the minimum average error rate
+findBestFeature :: Int -> Dataset -> (Int, ErrorRate)
+findBestFeature k dataset =
+  let numFeatures = length (snd (head dataset))
+      errorRates = [(idx, evaluateFeature k idx dataset) | idx <- [0 .. numFeatures - 1]]
+   in minimumBy (comparing snd) errorRates
+
+-- Train on the best feature found by k-fold cross-validation
+trainBestFeature :: Int -> Dataset -> Model
+trainBestFeature k dataset =
+  let (bestFeature, _) = findBestFeature k dataset
+      bestFeatureOnly = extractFeature dataset bestFeature
+   in trainModel bestFeatureOnly
