@@ -6,6 +6,9 @@ module Utils
     calculateLikelihood,
     calculateProduct,
     calculateStats,
+    extractFeatures,
+    extractLabels,
+    averageErrorRates,
   )
 where
 
@@ -52,6 +55,21 @@ calculateProduct feature (label, mean, variance, prior) =
 -- Function to extract a feature from a dataset
 extractFeature :: Dataset -> Int -> Dataset
 extractFeature dataset idx = map (\(label, features) -> (label, [features !! idx])) dataset
+
+-- Function to separate labels from features
+extractFeatures :: [LabeledFeatures] -> [Features]
+extractFeatures = map snd
+
+-- Function to separate labels from features
+extractLabels :: [LabeledFeatures] -> [Label]
+extractLabels = map fst
+
+-- Function to calculate the average error rate
+averageErrorRates :: [ErrorRate] -> ErrorRate
+averageErrorRates errorRates =
+  let total = sum errorRates
+      count = fromIntegral (length errorRates)
+   in total / count
 
 -- Function to merge folds for training
 mergeFolds :: [Dataset] -> Dataset

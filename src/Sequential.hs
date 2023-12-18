@@ -7,8 +7,9 @@ import Data.Function (on)
 import Data.List (maximumBy)
 import Data.Ord (comparing)
 import Data.Set qualified as Set
-import Types (Dataset, Features, Label, LabelStats, Model)
-import Utils (calculateLikelihood, calculateMeanAndStdDev, calculateProduct, calculateStats, extractFeature, mergeFolds, splitIntoFolds)
+import GHC.OldList (genericSplitAt)
+import Types (Dataset, ErrorRate, Features, Label, LabelStats, LabeledFeatures, Model)
+import Utils (averageErrorRates, calculateLikelihood, calculateMeanAndStdDev, calculateProduct, calculateStats, extractFeature, extractFeatures, extractLabels, mergeFolds, splitIntoFolds)
 
 -- Function to compare features
 compareFeature :: Dataset -> Int -> Double
@@ -61,3 +62,35 @@ predictSingleVector model feature =
 -- Predict labels for a list of FeatureVectors using the Model
 predict :: Model -> [Features] -> [Label]
 predict model = map (predictSingleVector model)
+
+-- Function to calculate the accuracy of the model
+calculateErrorRate :: [Label] -> [Label] -> ErrorRate
+calculateErrorRate predictedLabels actualLabels =
+  let totalLabels = length actualLabels
+      incorrectLabels = filter (uncurry (/=)) (zip predictedLabels actualLabels)
+      numIncorrect = length incorrectLabels
+   in fromIntegral numIncorrect / fromIntegral totalLabels
+
+-- Function to train and evaluate the model
+trainAndValidate :: [LabeledFeatures] -> [LabeledFeatures] -> ErrorRate
+trainAndValidate trainingData validationData =
+  let model = trainModel trainingData
+      predicted = predict model (extractFeatures validationData)
+   in calculateErrorRate predicted (extractLabels validationData)
+
+-- Split the dataset into training and validation sets at index i*len(dataset)/k
+splitData :: Int -> Int -> Dataset -> ([LabeledFeatures], [LabeledFeatures])
+splitData i k dataset =
+  let totalSize = length dataset
+      (validationStart, validationEnd) = (i * totalSize `div` k, (i + 1) * totalSize `div` k)
+      (validation, rest) = genericSplitAt (validationEnd - validationStart) (drop validationStart dataset)
+      training = take validationStart dataset ++ rest
+   in (training, validation)
+
+-- Perform k-fold cross-validation and calculate the average error rate
+kFoldCrossValidation :: Int -> Dataset -> ErrorRate
+kFoldCrossValidation k dataset =
+  let errorRates =
+        [ trainAndValidate training validation | i <- [0 .. k - 1], let (training, validation) = splitData i k dataset
+        ]
+   in averageErrorRates errorRates
