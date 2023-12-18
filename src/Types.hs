@@ -5,6 +5,7 @@ module Types
     Dataset,
     Model,
     LabelStats,
+    ErrorRate,
   )
 where
 
@@ -20,3 +21,5 @@ type Dataset = [LabeledFeatures]
 type LabelStats = (Label, Double, Double, Double) -- (Label, mean, variance, prior)
 
 type Model = [LabelStats]
+
+type ErrorRate = Double
