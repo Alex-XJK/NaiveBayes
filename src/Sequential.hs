@@ -3,10 +3,11 @@ module Sequential
   )
 where
 
+import Data.Function (on)
 import Data.List (maximumBy)
 import Data.Ord (comparing)
 import Data.Set qualified as Set
-import Types (Dataset, Model)
+import Types (Dataset, Features, Label, LabelStats, Model)
 import Utils (calculateLikelihood, calculateMeanAndStdDev, calculateProduct, calculateStats, extractFeature, mergeFolds, splitIntoFolds)
 
 -- Function to compare features
@@ -47,3 +48,16 @@ trainModel samples =
           )
           (Set.toList labelSet)
    in labelStats
+
+-- Predict label for a single FeatureVector using the Model
+predictSingleVector :: Model -> Features -> Label
+predictSingleVector model feature =
+  let calculateProductsForFeature = map (calculateProduct feature) model
+      getBestLabelIdx productValues = fst $ maximumBy (compare `on` snd) $ zip [0 ..] productValues
+      bestLabelIndex = getBestLabelIdx calculateProductsForFeature
+      bestLabel = (\(label, _, _, _) -> label) (model !! bestLabelIndex)
+   in bestLabel
+
+-- Predict labels for a list of FeatureVectors using the Model
+predict :: Model -> [Features] -> [Label]
+predict model = map (predictSingleVector model)
