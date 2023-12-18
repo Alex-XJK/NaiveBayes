@@ -12,15 +12,9 @@ module Utils
   )
 where
 
-import Data.List.Split (chunksOf)
-import Types
-  ( Dataset,
-    ErrorRate,
-    Features,
-    Label,
-    LabelStats,
-    LabeledFeatures,
-  )
+import           Data.List.Split (chunksOf)
+import           Types           (Dataset, ErrorRate, Features, Label,
+                                  LabelStats, LabeledFeatures)
 
 -- Function to calculate the mean and standard deviation of a list of values
 calculateMeanAndStdDev :: [Double] -> (Double, Double)

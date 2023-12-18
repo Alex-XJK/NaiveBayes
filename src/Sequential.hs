@@ -12,13 +12,16 @@ module Sequential
   )
 where
 
-import Data.Function (on)
-import Data.List (maximumBy, minimumBy)
-import Data.Ord (comparing)
-import Data.Set qualified as Set
-import GHC.OldList (genericSplitAt)
-import Types (Dataset, ErrorRate, Features, Label, LabeledFeatures, Model)
-import Utils (averageErrorRates, calculateProduct, calculateStats, extractFeature, extractFeatures, extractLabels)
+import           Data.Function (on)
+import           Data.List     (maximumBy, minimumBy)
+import           Data.Ord      (comparing)
+import qualified Data.Set      as Set
+import           GHC.OldList   (genericSplitAt)
+import           Types         (Dataset, ErrorRate, Features, Label,
+                                LabeledFeatures, Model)
+import           Utils         (averageErrorRates, calculateProduct,
+                                calculateStats, extractFeature, extractFeatures,
+                                extractLabels)
 
 -- -- Function to compare features
 -- compareFeature :: Dataset -> Int -> Double
