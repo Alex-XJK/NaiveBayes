@@ -1,6 +1,7 @@
 module Generator (
     sampleDataset,
     plainDataset,
+    plainDatasetParallel,
     generateDataset,
     generateDatasetParallel,
     readDataset
@@ -34,6 +35,16 @@ zipFeaturesToDataset_v5 = zipWith6 (\l f1 f2 f3 f4 f5 -> (l, [f1, f2, f3, f4, f5
 plainDataset :: [Int] -> [[Double]] -> Dataset
 plainDataset labels features = zipFeaturesToDataset_v5 labels (head features) (features !! 1) (features !! 2) (features !! 3) (features !! 4)
 
+-- [Parallel] Parallel version of plainDataset
+plainDatasetParallel :: [Int] -> [[Double]] -> Dataset
+plainDatasetParallel labels features =
+  zipFeaturesToDataset_v5 labels
+    (head features `using` parList rdeepseq)
+    (features !! 1 `using` parList rdeepseq)
+    (features !! 2 `using` parList rdeepseq)
+    (features !! 3 `using` parList rdeepseq)
+    (features !! 4 `using` parList rdeepseq)
+
 -- -- Function Group to zip multiple feature arrays into the Dataset format
 
 -- Function to generate a 1-dimensional feature array with normal distribution
@@ -66,7 +77,7 @@ generateDatasetParallel :: Int -> Int -> [(Double, Double, Double)] -> Dataset
 generateDatasetParallel totalSize maxValue featureParams =
   let labels = runEval $ parList rpar $ generateIntegerLabels totalSize maxValue
       features = parMap rpar (\(mean, vari, noif) -> generateFeatureNoise totalSize mean vari noif) featureParams
-  in plainDataset labels features
+  in plainDatasetParallel labels features
 
 -- Function to parse a row
 parseRow :: [String] -> LabeledFeatures
