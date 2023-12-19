@@ -29,8 +29,7 @@ runParallelFunctions totalSize labelSize featureParams kValue = do
   putStrLn "Running parallel functions..."
   let dataset = generateDatasetParallel totalSize labelSize featureParams
   putStr "Generated Dataset: length = "
-  print (take 5 dataset)
-  -- print (length dataset)
+  print (length dataset)
   let result = Par.trainBestFeature kValue dataset
   putStrLn "Best Feature:"
   print result
@@ -40,8 +39,7 @@ runSequentialFunctions totalSize labelSize featureParams kValue = do
   putStrLn "Running sequential functions..."
   let dataset = generateDataset totalSize labelSize featureParams
   putStr "Generated Dataset: length = "
-  print (take 5 dataset)
-  -- print (length dataset)
+  print (length dataset)
   let result = Seq.trainBestFeature kValue dataset
   putStrLn "Best Feature:"
   print result

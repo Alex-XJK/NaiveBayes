@@ -45,7 +45,7 @@ generateNormalFeature size mean vari = take size $ normals' (mean, sqrt vari) ge
 generateFeatureNoise :: Int -> Double -> Double -> Double -> [Double]
 generateFeatureNoise size mean vari noise =
   if noise == 0 then generateNormalFeature size mean vari
-  else zipWith (*) (generateNormalFeature size mean vari) (generateNormalFeature size 0 noise)
+  else zipWith (+) (generateNormalFeature size mean vari) (generateNormalFeature size 0 noise)
 
 -- Function to generate an integer labels array with standard distribution
 -- The labels are in the range [1, maxValue]
