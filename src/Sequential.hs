@@ -15,7 +15,7 @@ where
 import Data.Function (on)
 import Data.List (maximumBy, minimumBy)
 import Data.Ord (comparing)
-import Data.Set qualified as Set
+import qualified Data.Set as Set
 import GHC.OldList (genericSplitAt)
 import Types (Dataset, ErrorRate, Features, Label, LabeledFeatures, Model)
 import Utils (averageErrorRates, calculateProduct, calculateStats, extractFeature, extractFeatures, extractLabels)
@@ -76,9 +76,11 @@ calculateErrorRate predictedLabels actualLabels =
    in fromIntegral numIncorrect / fromIntegral totalLabels
 
 -- Function to train and evaluate the model
-trainAndValidate :: [LabeledFeatures] -> [LabeledFeatures] -> ErrorRate
-trainAndValidate trainingData validationData =
-  let model = trainModel trainingData
+trainAndValidate :: ([LabeledFeatures], [LabeledFeatures]) -> ErrorRate
+trainAndValidate tvPair =
+  let trainingData = fst tvPair
+      validationData = snd tvPair
+      model = trainModel trainingData
       predicted = predict model (extractFeatures validationData)
    in calculateErrorRate predicted (extractLabels validationData)
 
@@ -94,10 +96,8 @@ splitData i k dataset =
 -- Perform k-fold cross-validation and calculate the average error rate
 kFoldCrossValidation :: Int -> Dataset -> ErrorRate
 kFoldCrossValidation k dataset =
-  let errorRates =
-        [ trainAndValidate training validation | i <- [0 .. k - 1], let (training, validation) = splitData i k dataset
-        ]
-   in averageErrorRates errorRates
+  let errorRates = map (\i -> trainAndValidate (splitData i k dataset)) [0 .. k - 1]
+  in averageErrorRates errorRates
 
 -- Perform k-fold cross-validation for a single feature
 evaluateFeature :: Int -> Int -> Dataset -> ErrorRate
@@ -109,7 +109,7 @@ evaluateFeature k featureIndex dataset =
 findBestFeature :: Int -> Dataset -> (Int, ErrorRate)
 findBestFeature k dataset =
   let numFeatures = length (snd (head dataset))
-      errorRates = [(idx, evaluateFeature k idx dataset) | idx <- [0 .. numFeatures - 1]]
+      errorRates = map (\idx -> (idx, evaluateFeature k idx dataset)) [0 .. numFeatures - 1]
    in minimumBy (comparing snd) errorRates
 
 -- Train on the best feature found by k-fold cross-validation
