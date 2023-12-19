@@ -1,14 +1,5 @@
 module Parallel
-  ( trainModel,
-    predictSingleVector,
-    predict,
-    calculateErrorRate,
-    trainAndValidate,
-    splitData,
-    kFoldCrossValidation,
-    evaluateFeature,
-    findBestFeature,
-    trainBestFeature,
+  ( trainBestFeature
   )
 where
 
@@ -16,9 +7,8 @@ import Data.Function (on)
 import Data.List (maximumBy, minimumBy)
 import Data.Ord (comparing)
 import qualified Data.Set as Set
-import GHC.OldList (genericSplitAt)
 import Types (Dataset, ErrorRate, Features, Label, LabeledFeatures, Model)
-import Utils (averageErrorRates, calculateProduct, calculateStats, extractFeature, extractFeatures, extractLabels)
+import Utils (averageErrorRates, calculateProduct, calculateStats, extractFeature, extractFeatures, extractLabels, splitData, calculateErrorRate)
 import Control.Parallel.Strategies (parMap, rpar)
 
 -- Train a model
@@ -49,14 +39,6 @@ predictSingleVector model feature =
 predict :: Model -> [Features] -> [Label]
 predict model = parMap rpar (predictSingleVector model)
 
--- Function to calculate the accuracy of the model
-calculateErrorRate :: [Label] -> [Label] -> ErrorRate
-calculateErrorRate predictedLabels actualLabels =
-  let totalLabels = length actualLabels
-      incorrectLabels = filter (uncurry (/=)) (zip predictedLabels actualLabels)
-      numIncorrect = length incorrectLabels
-   in fromIntegral numIncorrect / fromIntegral totalLabels
-
 -- Function to train and evaluate the model
 trainAndValidate :: ([LabeledFeatures], [LabeledFeatures]) -> ErrorRate
 trainAndValidate tvPair =
@@ -66,20 +48,11 @@ trainAndValidate tvPair =
       predicted = predict model (extractFeatures validationData)
    in calculateErrorRate predicted (extractLabels validationData)
 
--- Split the dataset into training and validation sets at index i*len(dataset)/k
-splitData :: Int -> Int -> Dataset -> ([LabeledFeatures], [LabeledFeatures])
-splitData i k dataset =
-  let totalSize = length dataset
-      (validationStart, validationEnd) = (i * totalSize `div` k, (i + 1) * totalSize `div` k)
-      (validation, rest) = genericSplitAt (validationEnd - validationStart) (drop validationStart dataset)
-      training = take validationStart dataset ++ rest
-   in (training, validation)
-
 -- Perform k-fold cross-validation and calculate the average error rate
 kFoldCrossValidation :: Int -> Dataset -> ErrorRate
 kFoldCrossValidation k dataset =
   let errorRates = parMap rpar (\i -> trainAndValidate (splitData i k dataset)) [0 .. k - 1]
-  in averageErrorRates errorRates
+   in averageErrorRates errorRates
 
 -- Perform k-fold cross-validation for a single feature
 evaluateFeature :: Int -> Int -> Dataset -> ErrorRate

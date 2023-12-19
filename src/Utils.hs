@@ -9,18 +9,15 @@ module Utils
     extractFeatures,
     extractLabels,
     averageErrorRates,
+    splitData,
+    calculateErrorRate
   )
 where
 
 import Data.List.Split (chunksOf)
+import GHC.OldList (genericSplitAt)
+
 import Types
-  ( Dataset,
-    ErrorRate,
-    Features,
-    Label,
-    LabelStats,
-    LabeledFeatures,
-  )
 
 -- Function to calculate the mean and standard deviation of a list of values
 calculateMeanAndStdDev :: [Double] -> (Double, Double)
@@ -79,3 +76,20 @@ splitIntoFolds dataset k =
   let (foldSize, remainder) = length dataset `quotRem` k
       initialFoldSize = foldSize + if remainder > 0 then 1 else 0
    in chunksOf initialFoldSize dataset
+
+-- Split the dataset into training and validation sets at index i*len(dataset)/k
+splitData :: Int -> Int -> Dataset -> ([LabeledFeatures], [LabeledFeatures])
+splitData i k dataset =
+  let totalSize = length dataset
+      (validationStart, validationEnd) = (i * totalSize `div` k, (i + 1) * totalSize `div` k)
+      (validation, rest) = genericSplitAt (validationEnd - validationStart) (drop validationStart dataset)
+      training = take validationStart dataset ++ rest
+   in (training, validation)
+
+-- Function to calculate the accuracy of the model
+calculateErrorRate :: [Label] -> [Label] -> ErrorRate
+calculateErrorRate predictedLabels actualLabels =
+  let totalLabels = length actualLabels
+      incorrectLabels = filter (uncurry (/=)) (zip predictedLabels actualLabels)
+      numIncorrect = length incorrectLabels
+   in fromIntegral numIncorrect / fromIntegral totalLabels
