@@ -38,8 +38,14 @@ plainDataset labels features = zipFeaturesToDataset_v5 labels (head features) (f
 
 -- Function to generate a 1-dimensional feature array with normal distribution
 generateNormalFeature :: Int -> Double -> Double -> [Double]
-generateNormalFeature size mean stdDev = take size $ normals' (mean, stdDev) gen
+generateNormalFeature size mean vari = take size $ normals' (mean, sqrt vari) gen
   where gen = mkStdGen 42
+
+-- Function to generate a 1-dimensional feature array with normal distribution
+generateFeatureNoise :: Int -> Double -> Double -> Double -> [Double]
+generateFeatureNoise size mean vari noise =
+  if noise == 0 then generateNormalFeature size mean vari
+  else zipWith (*) (generateNormalFeature size mean vari) (generateNormalFeature size 0 noise)
 
 -- Function to generate an integer labels array with standard distribution
 -- The labels are in the range [1, maxValue]
@@ -48,18 +54,18 @@ generateIntegerLabels size maxValue = take size $ randomRs (1, maxValue) gen
   where gen = mkStdGen 42
 
 -- [Public] Generate a complete dataset with given parameters
-generateDataset :: Int -> Int -> [(Double, Double)] -> Dataset
+generateDataset :: Int -> Int -> [(Double, Double, Double)] -> Dataset
 generateDataset totalSize maxValue featureParams =
   let labels = generateIntegerLabels totalSize maxValue
-      features = map (uncurry (generateNormalFeature totalSize)) featureParams
+      features = map (\(mean, vari, noif) -> generateFeatureNoise totalSize mean vari noif) featureParams
   in plainDataset labels features
 
 -- [Parallel] Parallel version of generateDataset
 -- [Public] Generate a complete dataset with given parameters
-generateDatasetParallel :: Int -> Int -> [(Double, Double)] -> Dataset
+generateDatasetParallel :: Int -> Int -> [(Double, Double, Double)] -> Dataset
 generateDatasetParallel totalSize maxValue featureParams =
   let labels = runEval $ parList rpar $ generateIntegerLabels totalSize maxValue
-      features = parMap rpar (uncurry (generateNormalFeature totalSize)) featureParams
+      features = parMap rpar (\(mean, vari, noif) -> generateFeatureNoise totalSize mean vari noif) featureParams
   in plainDataset labels features
 
 -- Function to parse a row
