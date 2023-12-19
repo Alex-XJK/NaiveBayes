@@ -27,7 +27,7 @@ calculateMeanAndStdDev :: [Double] -> (Double, Double)
 calculateMeanAndStdDev xs =
   let n = fromIntegral $ length xs
       mean = sum xs / n
-      variance = sum (map (\x -> (x - mean) ^ 2) xs) / n
+      variance = sum (map (\x -> (x - mean) ^ (2 :: Integer)) xs) / n
    in (mean, variance)
 
 -- Function to calculate the statistics for a given label
@@ -40,13 +40,13 @@ calculateStats label features prior =
 -- Calculate the likelihood of x for a normal distribution with mean mu and variance sigma2
 calculateLikelihood :: Double -> Double -> Double -> Double
 calculateLikelihood x mu sigma2 =
-  let exponent = -((x - mu) ** 2) / (2 * sigma2)
+  let myexponent = -((x - mu) ** 2) / (2 * sigma2)
       coefficient = 1 / sqrt (2 * pi * sigma2)
-   in coefficient * exp exponent
+   in coefficient * exp myexponent
 
 -- Calculate the product of likelihood and prior for a given FeatureVector and LabelStats
 calculateProduct :: Features -> LabelStats -> Double
-calculateProduct feature (label, mean, variance, prior) =
+calculateProduct feature (_, mean, variance, prior) =
   let likelihood = calculateLikelihood (head feature) mean variance
    in prior * likelihood
 
