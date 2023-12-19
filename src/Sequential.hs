@@ -20,25 +20,6 @@ import GHC.OldList (genericSplitAt)
 import Types (Dataset, ErrorRate, Features, Label, LabeledFeatures, Model)
 import Utils (averageErrorRates, calculateProduct, calculateStats, extractFeature, extractFeatures, extractLabels)
 
--- -- Function to compare features
--- compareFeature :: Dataset -> Int -> Double
--- compareFeature dataset k =
---   let indices = [0 .. length (snd (head dataset)) - 1]
---       accuracies = map (\idx -> splitTest (extractFeature dataset idx) k) indices
---    in maximum accuracies
-
--- -- Function to split test
--- splitTest :: Dataset -> Int -> Double
--- splitTest dataset k = undefined
-
--- -- Function to train and evaluate the model
--- trainAndEvaluate :: Dataset -> (Double, Model)
--- trainAndEvaluate dataset = undefined
-
--- -- Function for making predictions
--- prediction :: Model -> Dataset -> Double
--- prediction model dataset = undefined
-
 -- Train a model
 trainModel :: Dataset -> Model
 trainModel samples =
