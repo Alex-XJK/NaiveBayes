@@ -17,7 +17,7 @@ trainModel samples =
   let totalSamples = fromIntegral $ length samples
       labelSet = Set.fromList $ map fst samples
       labelStats =
-        map
+        parMap rpar
           ( \label ->
               let labelSamples = filter ((== label) . fst) samples
                   labelCount = fromIntegral $ length labelSamples
@@ -44,8 +44,8 @@ trainAndValidate :: ([LabeledFeatures], [LabeledFeatures]) -> ErrorRate
 trainAndValidate tvPair =
   let trainingData = fst tvPair
       validationData = snd tvPair
-      model = trainModel trainingData
-      predicted = predict model (extractFeatures validationData)
+      model = trainModel trainingData -- training
+      predicted = predict model (extractFeatures validationData) -- get error rate
    in calculateErrorRate predicted (extractLabels validationData)
 
 -- Perform k-fold cross-validation and calculate the average error rate
