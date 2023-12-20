@@ -9,59 +9,85 @@ import qualified Sequential as Seq
 
 -- Main function
 -- Run the program with the
---    -seq|-par [-file <path>]
+--    -seq|-par [-file <path> <test_path>]
 -- e.g., stack run -- -par -file "./data/iris.tsv"
 main :: IO ()
 main = do
   args <- getArgs
   let totalSize = 1000000
+      testSize = 100
       labelSize = 5
       featureParams = [(1.0, 0.25, 0.25), (-1.0, 0.5, 0.5), (80.0, 1.2, 0.0), (-2.0, 2.0, 2.0), (2, 1.0, 1.0)] -- [(mean, variance, noise)]
       kValue = 4
   case args of
-    ["-par", "-file", path] -> runParallelFunctionsWithFile   path                              kValue
-    ["-par"]                -> runParallelFunctions           totalSize labelSize featureParams kValue
-    ["-seq", "-file", path] -> runSequentialFunctionsWithFile path                              kValue
-    ["-seq"]                -> runSequentialFunctions         totalSize labelSize featureParams kValue
-    _                       -> putStrLn "Invalid flag. Usage: -seq|-par [-file <path>]"
+    ["-par", "-file", path, testpath] -> runParallelFunctionsWithFile   path                              kValue testpath
+    ["-par"]                          -> runParallelFunctions           totalSize labelSize featureParams kValue testSize
+    ["-seq", "-file", path, testpath] -> runSequentialFunctionsWithFile path                              kValue testpath
+    ["-seq"]                          -> runSequentialFunctions         totalSize labelSize featureParams kValue testSize
+    _                                 -> putStrLn "Invalid flag. Usage: -seq|-par [-file <path> <test_path>]"
 
-runParallelFunctionsWithFile :: String -> Int -> IO ()
-runParallelFunctionsWithFile path kValue = do
+runParallelFunctionsWithFile :: String -> Int -> String -> IO ()
+runParallelFunctionsWithFile path kValue testpath = do
   putStrLn "Running parallel functions with File Reading..."
-  dataset <- readDataset path
   putStr "Read in Dataset: length = "
+  dataset <- readDataset path
   print (length dataset)
-  let result = Par.trainBestFeature kValue dataset
-  putStrLn "Best Feature:"
-  print result
+  putStr "Read in Test Dataset: length = "
+  testDataset <- readDataset testpath
+  print (length testDataset)
+  let (model, idx) = Par.trainBestFeature kValue dataset
+  putStr "Best Feature: "
+  print idx
+  putStrLn "Error rate using the best feature on testing data:"
+  let errorRate = Par.getBestErrorRate idx testDataset model
+  print errorRate
 
-runParallelFunctions :: Int -> Int -> [(Double, Double, Double)] -> Int -> IO ()
-runParallelFunctions totalSize labelSize featureParams kValue = do
+runParallelFunctions :: Int -> Int -> [(Double, Double, Double)] -> Int -> Int -> IO ()
+runParallelFunctions totalSize labelSize featureParams kValue testSize = do
   putStrLn "Running parallel functions..."
   let dataset = generateDatasetParallel totalSize labelSize featureParams
+      testDataset = generateDataset testSize labelSize featureParams
   putStr "Generated Dataset: length = "
   print (length dataset)
-  let result = Par.trainBestFeature kValue dataset
-  putStrLn "Best Feature:"
-  print result
+  putStr "Generated Test Dataset: length = "
+  print (length testDataset)
+  let (model, idx) = Par.trainBestFeature kValue dataset
+  putStr "Best Feature: "
+  print idx
+  putStrLn "Error rate using the best feature on testing data:"
+  let errorRate = Par.getBestErrorRate idx testDataset model
+  print errorRate
 
-runSequentialFunctionsWithFile :: String -> Int -> IO ()
-runSequentialFunctionsWithFile path kValue = do
+runSequentialFunctionsWithFile :: String -> Int -> String -> IO ()
+runSequentialFunctionsWithFile path kValue testpath = do
   putStrLn "Running sequential functions with File Reading..."
-  dataset <- readDataset path
   putStr "Read in Dataset: length = "
+  dataset <- readDataset path
   print (length dataset)
-  let result = Seq.trainBestFeature kValue dataset
-  putStrLn "Best Feature:"
-  print result
+  putStr "Read in Test Dataset: length = "
+  testDataset <- readDataset testpath
+  print (length testDataset)
+  let (model, idx) = Seq.trainBestFeature kValue dataset
+  putStr "Best Feature: "
+  print idx
+  putStrLn "Error rate using the best feature on testing data:"
+  let errorRate = Seq.getBestErrorRate idx testDataset model
+  print errorRate
 
-runSequentialFunctions :: Int -> Int -> [(Double, Double, Double)] -> Int -> IO ()
-runSequentialFunctions totalSize labelSize featureParams kValue = do
+runSequentialFunctions :: Int -> Int -> [(Double, Double, Double)] -> Int -> Int -> IO ()
+runSequentialFunctions totalSize labelSize featureParams kValue testSize = do
   putStrLn "Running sequential functions..."
   let dataset = generateDataset totalSize labelSize featureParams
+      testDataset = generateDataset testSize labelSize featureParams
   putStr "Generated Dataset: length = "
   print (length dataset)
-  let result = Seq.trainBestFeature kValue dataset
-  putStrLn "Best Feature:"
-  print result
+  putStr "Generated Test Dataset: length = "
+  print (length testDataset)
+  let (model, idx) = Seq.trainBestFeature kValue dataset
+  putStr "Best Feature: "
+  print idx
+  putStrLn "Error rate using the best feature on testing data:"
+  let errorRate = Seq.getBestErrorRate idx testDataset model
+  print errorRate
+
 

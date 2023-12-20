@@ -1,5 +1,6 @@
 module Sequential
   ( trainBestFeature
+  , getBestErrorRate
   )
 where
 
@@ -67,8 +68,15 @@ findBestFeature k dataset =
    in minimumBy (comparing snd) errorRates
 
 -- Train on the best feature found by k-fold cross-validation
-trainBestFeature :: Int -> Dataset -> Model
+trainBestFeature :: Int -> Dataset -> (Model, Int)
 trainBestFeature k dataset =
   let (bestFeature, _) = findBestFeature k dataset
       bestFeatureOnly = extractFeature dataset bestFeature
-   in trainModel bestFeatureOnly
+   in (trainModel bestFeatureOnly, bestFeature)
+
+-- Get error rate of the best model
+getBestErrorRate :: Int -> Dataset -> Model -> ErrorRate
+getBestErrorRate idx dataset model =
+  let bestFeatureOnly = extractFeatures (extractFeature dataset idx)
+      predicted = predict model bestFeatureOnly
+   in calculateErrorRate predicted (extractLabels dataset)
