@@ -17,13 +17,14 @@ main = do
   let totalSize = 1000000
       testSize = 100
       labelSize = 5
-      featureParams = [(1.0, 0.25, 0.25), (-1.0, 0.5, 0.5), (80.0, 1.2, 0.0), (-2.0, 2.0, 2.0), (2, 1.0, 1.0)] -- [(mean, variance, noise)]
+      featureParams = [(1.0, 0.25), (-1.0, 0.5), (80.0, 1.2), (-2.0, 2.0), (2, 1.0)] -- [(mean, variance)]
+      noiseArray = [1, 2, 0, 4, 5]
       kValue = 4
   case args of
-    ["-par", "-file", path, testpath] -> runParallelFunctionsWithFile   path                              kValue testpath
-    ["-par"]                          -> runParallelFunctions           totalSize labelSize featureParams kValue testSize
-    ["-seq", "-file", path, testpath] -> runSequentialFunctionsWithFile path                              kValue testpath
-    ["-seq"]                          -> runSequentialFunctions         totalSize labelSize featureParams kValue testSize
+    ["-par", "-file", path, testpath] -> runParallelFunctionsWithFile   path                                          kValue testpath
+    ["-par"]                          -> runParallelFunctions           totalSize labelSize featureParams noiseArray  kValue testSize
+    ["-seq", "-file", path, testpath] -> runSequentialFunctionsWithFile path                                          kValue testpath
+    ["-seq"]                          -> runSequentialFunctions         totalSize labelSize featureParams noiseArray  kValue testSize
     _                                 -> putStrLn "Invalid flag. Usage: -seq|-par [-file <path> <test_path>]"
 
 runParallelFunctionsWithFile :: String -> Int -> String -> IO ()
@@ -42,11 +43,11 @@ runParallelFunctionsWithFile path kValue testpath = do
   let errorRate = Par.getBestErrorRate idx testDataset model
   print errorRate
 
-runParallelFunctions :: Int -> Int -> [(Double, Double, Double)] -> Int -> Int -> IO ()
-runParallelFunctions totalSize labelSize featureParams kValue testSize = do
+runParallelFunctions :: Int -> Int -> [(Double, Double)] -> [Double] -> Int -> Int -> IO ()
+runParallelFunctions totalSize labelSize featureParams noiseArray kValue testSize = do
   putStrLn "Running parallel functions..."
-  let dataset = generateDatasetParallel totalSize labelSize featureParams
-      testDataset = generateDataset testSize labelSize featureParams
+  let dataset = generateDatasetParallel totalSize labelSize featureParams noiseArray
+      testDataset = generateDataset testSize labelSize featureParams noiseArray
   putStr "Generated Dataset: length = "
   print (length dataset)
   putStr "Generated Test Dataset: length = "
@@ -74,11 +75,11 @@ runSequentialFunctionsWithFile path kValue testpath = do
   let errorRate = Seq.getBestErrorRate idx testDataset model
   print errorRate
 
-runSequentialFunctions :: Int -> Int -> [(Double, Double, Double)] -> Int -> Int -> IO ()
-runSequentialFunctions totalSize labelSize featureParams kValue testSize = do
+runSequentialFunctions :: Int -> Int -> [(Double, Double)] -> [Double] -> Int -> Int -> IO ()
+runSequentialFunctions totalSize labelSize featureParams noiseArray kValue testSize = do
   putStrLn "Running sequential functions..."
-  let dataset = generateDataset totalSize labelSize featureParams
-      testDataset = generateDataset testSize labelSize featureParams
+  let dataset = generateDataset totalSize labelSize featureParams noiseArray
+      testDataset = generateDataset testSize labelSize featureParams noiseArray
   putStr "Generated Dataset: length = "
   print (length dataset)
   putStr "Generated Test Dataset: length = "
