@@ -10,7 +10,7 @@ import Data.Ord (comparing)
 import qualified Data.Set as Set
 import Types (Dataset, ErrorRate, Features, Label, LabeledFeatures, Model)
 import Utils (averageErrorRates, calculateProduct, calculateStats, extractFeature, extractFeatures, extractLabels, splitData, calculateErrorRate)
-import Control.Parallel.Strategies (parMap, rpar)
+import Control.Parallel.Strategies (parMap, rpar, parListChunk, parBuffer, runEval)
 
 -- Train a model
 trainModel :: Dataset -> Model
@@ -50,28 +50,56 @@ trainAndValidate tvPair =
    in calculateErrorRate predicted (extractLabels validationData)
 
 -- Perform k-fold cross-validation and calculate the average error rate
-kFoldCrossValidation :: Int -> Dataset -> ErrorRate
-kFoldCrossValidation k dataset =
+
+-- [Experiment] parMap rpar
+kFoldCrossValidationPM :: Int -> Dataset -> ErrorRate
+kFoldCrossValidationPM k dataset =
   let errorRates = parMap rpar (\i -> trainAndValidate (splitData i k dataset)) [0 .. k - 1]
    in averageErrorRates errorRates
+
+-- [Experiment] parListChunk rpar
+kFoldCrossValidationPLC :: Int -> Dataset -> ErrorRate
+kFoldCrossValidationPLC k dataset =
+  let chunkSize = ceiling ((fromIntegral k / 4) :: Double)
+      errorRates = runEval $
+         parListChunk chunkSize rpar $ map (\i -> trainAndValidate (splitData i k dataset)) [0 .. k - 1]
+  in averageErrorRates errorRates
+
+-- [Experiment] parBuffer rpar
+kFoldCrossValidationPB :: Int -> Dataset -> ErrorRate
+kFoldCrossValidationPB k dataset =
+  let bufferSize = ceiling ((fromIntegral k / 2) :: Double)
+      errorRates = runEval $
+        parBuffer bufferSize rpar $ map (\i -> trainAndValidate (splitData i k dataset)) [0 .. k - 1]
+  in averageErrorRates errorRates
 
 -- Perform k-fold cross-validation for a single feature
 evaluateFeature :: Int -> Int -> Dataset -> ErrorRate
 evaluateFeature k featureIndex dataset =
   let featureOnly = extractFeature dataset featureIndex
-   in kFoldCrossValidation k featureOnly
+   in kFoldCrossValidationPB k featureOnly
 
 -- Find the feature with the minimum average error rate
-findBestFeature :: Int -> Dataset -> (Int, ErrorRate)
-findBestFeature k dataset =
+-- [Experiment] parMap rpar
+findBestFeaturePM :: Int -> Dataset -> (Int, ErrorRate)
+findBestFeaturePM k dataset =
   let numFeatures = length (snd (head dataset))
       errorRates = parMap rpar  (\idx -> (idx, evaluateFeature k idx dataset)) [0 .. numFeatures - 1]
+   in minimumBy (comparing snd) errorRates
+
+-- [Experiment] parBuffer rpar
+findBestFeaturePB :: Int -> Dataset -> (Int, ErrorRate)
+findBestFeaturePB k dataset =
+  let numFeatures = length (snd (head dataset))
+      bufferSize = ceiling ((fromIntegral numFeatures / 2) :: Double)
+      errorRates = runEval $
+        parBuffer bufferSize rpar $ map (\idx -> (idx, evaluateFeature k idx dataset)) [0 .. numFeatures - 1]
    in minimumBy (comparing snd) errorRates
 
 -- Train on the best feature found by k-fold cross-validation
 trainBestFeature :: Int -> Dataset -> (Model, Int)
 trainBestFeature k dataset =
-  let (bestFeature, _) = findBestFeature k dataset
+  let (bestFeature, _) = findBestFeaturePM k dataset
       bestFeatureOnly = extractFeature dataset bestFeature
    in (trainModel bestFeatureOnly, bestFeature)
 
