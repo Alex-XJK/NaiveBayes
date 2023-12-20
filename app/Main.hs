@@ -19,7 +19,7 @@ main = do
       labelSize = 5
       featureParams = [(1.0, 0.25), (-1.0, 0.5), (80.0, 1.2), (-2.0, 2.0), (2, 1.0)] -- [(mean, variance)]
       noiseArray = [1, 2, 0, 4, 5]
-      kValue = 4
+      kValue = 10
   case args of
     ["-par", "-file", path, testpath] -> runParallelFunctionsWithFile   path                                          kValue testpath
     ["-par"]                          -> runParallelFunctions           totalSize labelSize featureParams noiseArray  kValue testSize

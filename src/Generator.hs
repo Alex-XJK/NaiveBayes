@@ -8,7 +8,7 @@ module Generator (
 ) where
 
 import Data.List (zipWith6)
-import System.Random (randomRs, mkStdGen)
+import System.Random (mkStdGen)
 import Data.Random.Normal (normals')
 import System.IO ()
 
@@ -52,23 +52,11 @@ generateNormalFeature :: Int -> Double -> Double -> [Double]
 generateNormalFeature size mean vari = take size $ normals' (mean, sqrt vari) gen
   where gen = mkStdGen 42
 
--- Function to generate a 1-dimensional feature array with normal distribution
-generateFeatureNoise :: Int -> Double -> Double -> Double -> [Double]
-generateFeatureNoise size mean vari noise =
-  if noise == 0 then generateNormalFeature size mean vari
-  else zipWith (+) (generateNormalFeature size mean vari) (generateNormalFeature size 0 noise)
-
--- Function to generate an integer labels array with standard distribution
--- The labels are in the range [1, maxValue]
-generateIntegerLabels :: Int -> Int -> [Int]
-generateIntegerLabels size maxValue = take size $ randomRs (1, maxValue) gen
-  where gen = mkStdGen 42
-
 -- [Public] Generate a complete dataset with given parameters
 generateDataset :: Int -> Int -> [(Double, Double)] -> [Double] -> Dataset
 generateDataset totalSize maxValue featureParams noisesArray =
-  let labels = concat $ map (replicate (totalSize `div` maxValue)) [1..maxValue]
-      baseFeature = concat $ map (\(mean, vari) -> generateNormalFeature (totalSize `div` maxValue) mean vari) featureParams
+  let labels = concatMap (replicate (totalSize `div` maxValue)) [1..maxValue]
+      baseFeature = concatMap (uncurry (generateNormalFeature (totalSize `div` maxValue))) featureParams
       features = map (\noise -> zipWith (+) (generateNormalFeature totalSize 0 noise) baseFeature) noisesArray
   in plainDataset labels features
 
@@ -77,7 +65,7 @@ generateDataset totalSize maxValue featureParams noisesArray =
 generateDatasetParallel :: Int -> Int -> [(Double, Double)] -> [Double] -> Dataset
 generateDatasetParallel totalSize maxValue featureParams noisesArray =
   let labels = concat $ parMap rpar (replicate (totalSize `div` maxValue)) [1..maxValue]
-      baseFeature = concat $ parMap rpar (\(mean, vari) -> generateNormalFeature (totalSize `div` maxValue) mean vari) featureParams
+      baseFeature = concat $ parMap rpar (uncurry (generateNormalFeature (totalSize `div` maxValue))) featureParams
       features = parMap rpar (\noise -> zipWith (+) (generateNormalFeature totalSize 0 noise) baseFeature) noisesArray
   in plainDatasetParallel labels features
 
