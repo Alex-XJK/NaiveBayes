@@ -46,7 +46,7 @@ runParallelFunctionsWithFile path kValue testpath = do
 runParallelFunctions :: Int -> Int -> [(Double, Double)] -> [Double] -> Int -> Int -> IO ()
 runParallelFunctions totalSize labelSize featureParams noiseArray kValue testSize = do
   putStrLn "Running parallel functions..."
-  let dataset = generateDatasetParallel totalSize labelSize featureParams noiseArray
+  let dataset = generateDataset totalSize labelSize featureParams noiseArray
       testDataset = generateDataset testSize labelSize featureParams noiseArray
   putStr "Generated Dataset: length = "
   print (length dataset)

@@ -18,7 +18,7 @@ trainModel samples =
   let totalSamples = fromIntegral $ length samples
       labelSet = Set.fromList $ map fst samples
       labelStats =
-        parMap rpar
+        map
           ( \label ->
               let labelSamples = filter ((== label) . fst) samples
                   labelCount = fromIntegral $ length labelSamples
@@ -38,7 +38,7 @@ predictSingleVector model feature =
 
 -- Predict labels for a list of FeatureVectors using the Model
 predict :: Model -> [Features] -> [Label]
-predict model = parMap rpar (predictSingleVector model)
+predict model = map (predictSingleVector model)
 
 -- Function to train and evaluate the model
 trainAndValidate :: ([LabeledFeatures], [LabeledFeatures]) -> ErrorRate
