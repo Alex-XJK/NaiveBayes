@@ -18,3 +18,22 @@ for feature in features:
     average all error rates for this feature
 select the feature with the lowest error rate
 ```
+
+## Usage
+Use `stack build` to build the program.  
+Run the program with `stack run -- [command line arguments]`  
+Where the command line arguments can be:
+- `-h` to see the usage message
+- `-seq` to run the sequential functions with randomly generated dataset
+- `-seq -file <data_path> <test_path>` to run the sequential functions with your data and test files
+- `-par` to run the parallel functions with randomly generated dataset
+- `-par -file <data_path> <test_path>` to run the parallel functions with your data and test files
+Please notice that, you files have to be in a space/tab-separated file, in the format of:
+```
+label   feature1    feature2 ...
+label   feature1    feature2 ...
+label   feature1    feature2 ...
+...
+```
+We have included a sample iris data in our `./data/` directory, for your reference.
+To run with that, use command `stack run -- -par -file ./data/iris.tsv ./data/iris_test.tsv`

@@ -3,14 +3,16 @@ module Main (
 ) where
 
 import System.Environment (getArgs)
-import Generator (generateDataset, generateDatasetParallel, readDataset)
+import Generator (generateDataset, readDataset)
 import qualified Parallel as Par
 import qualified Sequential as Seq
 
 -- Main function
 -- Run the program with the
---    -seq|-par [-file <path> <test_path>]
--- e.g., stack run -- -par -file "./data/iris.tsv"
+--    -h                              flag to see the usage
+--    -seq [-file <path> <test_path>] flag to run the sequential functions
+--    -par [-file <path> <test_path>] flag to run the parallel functions
+-- e.g., stack run -- -par -file ./data/iris.tsv ./data/iris_test.tsv
 main :: IO ()
 main = do
   args <- getArgs
@@ -25,6 +27,7 @@ main = do
     ["-par"]                          -> runParallelFunctions           totalSize labelSize featureParams noiseArray  kValue testSize
     ["-seq", "-file", path, testpath] -> runSequentialFunctionsWithFile path                                          kValue testpath
     ["-seq"]                          -> runSequentialFunctions         totalSize labelSize featureParams noiseArray  kValue testSize
+    ["-h"]                            -> putStrLn "A Parallel Naive Bayes Classifier designed by Amy Qi and Alex Xu.\nUsage: -seq|-par [-file <path> <test_path>]"
     _                                 -> putStrLn "Invalid flag. Usage: -seq|-par [-file <path> <test_path>]"
 
 runParallelFunctionsWithFile :: String -> Int -> String -> IO ()

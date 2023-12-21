@@ -60,7 +60,7 @@ kFoldCrossValidationPM k dataset =
 -- [Experiment] parListChunk rpar
 kFoldCrossValidationPLC :: Int -> Dataset -> ErrorRate
 kFoldCrossValidationPLC k dataset =
-  let chunkSize = ceiling ((fromIntegral k / 2) :: Double)
+  let chunkSize = ceiling ((fromIntegral k / 4) :: Double)
       errorRates = runEval $
          parListChunk chunkSize rpar $ map (\i -> trainAndValidate (splitData i k dataset)) [0 .. k - 1]
   in averageErrorRates errorRates
